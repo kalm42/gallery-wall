@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { nanoid } from "nanoid";
 import Doc from "@/components/Doc";
 import Frame from "@/components/Frame";
 import FrameManager from "@/components/FrameManager";
@@ -7,32 +9,9 @@ import LayoutSelector from "@/components/LayoutSelector";
 import PieceCount from "@/components/PieceCount";
 import WallContainer from "@/components/WallContainer";
 import WallSizeControls from "@/components/WallSizeControls";
-import { useState } from "react";
-import { z } from "zod";
-
-export const standardFrameDimensions = [
-  { width: 8, height: 10 },
-  { width: 11, height: 14 },
-  { width: 16, height: 20 },
-  { width: 18, height: 24 },
-  { width: 24, height: 36 },
-];
-export const frameSchema = z.object({
-  id: z.string().nanoid(),
-  width: z.number(),
-  height: z.number(),
-  top: z.number(),
-  left: z.number(),
-});
-export type Frame = z.infer<typeof frameSchema>;
-export const framesSchema = z.array(frameSchema);
-export type Frames = z.infer<typeof framesSchema>;
-export const layoutSchema = z.enum([
-  "symmetrical",
-  "asymmetrical",
-  "focalPoint",
-]);
-export type Layout = z.infer<typeof layoutSchema>;
+import { Frames, Layout } from "@/lib/types";
+// TODO! Missing { generateLayout } from "@/lib/generateLayout";
+// TODO! Missing import { Frames, Layout } from "@/lib/types";
 
 export default function Home() {
   const [scale, setScale] = useState(1);
@@ -42,6 +21,27 @@ export default function Home() {
   const [layout, setLayout] = useState<Layout>("symmetrical");
   const [frames, setFrames] = useState<Frames>([]);
   const [pieceCount, setPieceCount] = useState(0);
+
+  const handleClick = () => {
+    const f = generateLayout(layout, pieceCount, wallWidth, wallHeight, frames);
+    if (!f) return;
+    const derivedFrames = f.layout.map((frame) => ({
+      height: frame.height,
+      id: nanoid(),
+      left: frame.left,
+      top: frame.top,
+      width: frame.width,
+    }));
+    setFrames(derivedFrames);
+  };
+
+  // Keep piece count
+  useEffect(() => {
+    if (frames.length === 0) return;
+    if (frames.length > pieceCount) {
+      setPieceCount(frames.length);
+    }
+  }, [frames.length, pieceCount]);
 
   return (
     <div className="w-full min-h-screen">
@@ -67,6 +67,12 @@ export default function Home() {
           <FrameManager frames={frames} setFrames={setFrames} />
           <LayoutSelector layout={layout} setLayout={setLayout} />
           <PieceCount pieceCount={pieceCount} setPieceCount={setPieceCount} />
+          <button
+            onClick={handleClick}
+            className="m-2 py-4 px-10 rounded-md block bg-slate-300 dark:bg-slate-900"
+          >
+            Generate Layout
+          </button>
         </Doc>
       </main>
       <footer>
