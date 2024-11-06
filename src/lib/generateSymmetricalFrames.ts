@@ -1,6 +1,6 @@
 import { nanoid } from "nanoid";
 import getLargestFrameSize from "./getLargestFrameSize";
-import { Frame, FrameSize, standardFrameDimensions } from "./types";
+import { DefinedLayout, Frame, FrameSize, standardFrameDimensions } from "./types";
 
 type GenerateSymmetricalFramesOptions = {
     pieceCount: number;
@@ -11,11 +11,11 @@ type GenerateSymmetricalFramesOptions = {
     maxGap?: number;
   }
   
-  const generateSymmetricalFrames = (options: GenerateSymmetricalFramesOptions) => {
+  const generateSymmetricalFrames = (options: GenerateSymmetricalFramesOptions): DefinedLayout => {
     const { pieceCount, wallWidth, wallHeight, existingFrames = [], minGap = 2, maxGap = 4 } = options;
   
     const additionalFramesNeeded = pieceCount - existingFrames.length;
-    if (additionalFramesNeeded <= 0) return { frames: existingFrames, gap: minGap };
+    if (additionalFramesNeeded <= 0) return {  frames: existingFrames, gap: minGap };
   
     const standardSizes = [...standardFrameDimensions];
     // Add any frames sizes in the existing frames set that are not currently in the standard frame sizes set
